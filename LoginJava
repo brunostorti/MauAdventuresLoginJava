@@ -1,0 +1,95 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+
+public class sistemaLogin {
+    private static final String URL = "jdbc:mysql://localhost:3306/MauAdventures";
+    private static final String USER = "root";
+    private static final String PASSWORD = "1234";
+
+
+    public static void cadastrarUsuario(String usuario, String senha) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String sql = "INSERT INTO usuarios (usuario, senha) VALUES (?, ?)";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, usuario);
+                stmt.setString(2, senha);
+                stmt.executeUpdate();
+            }
+            System.out.println("Usuário cadastrado com sucesso.");
+        } catch (SQLException e) {
+            System.out.println("Erro ao cadastrar usuário: " + e.getMessage());
+        }
+    }
+
+
+    public static boolean verificarLogin(String usuario, String senha) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String sql = "SELECT usuario FROM usuarios WHERE usuario = ? AND senha = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, usuario);
+                stmt.setString(2, senha);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    return rs.next();
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao verificar login: " + e.getMessage());
+            return false;
+        }
+    }
+
+
+    public static void adicionarJogador(String usuario) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String sql = "INSERT INTO jogadores (usuario) VALUES (?)";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, usuario);
+                stmt.executeUpdate();
+            }
+            System.out.println("Jogador adicionado com sucesso.");
+        } catch (SQLException e) {
+            System.out.println("Erro ao adicionar jogador: " + e.getMessage());
+        }
+    }
+
+
+    public static void atualizarJogador(String usuario, int pontuacao, int nivel) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String sql = "UPDATE jogadores SET pontuacao = ?, nivel = ? WHERE usuario = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, pontuacao);
+                stmt.setInt(2, nivel);
+                stmt.setString(3, usuario);
+                stmt.executeUpdate();
+            }
+            System.out.println("Jogador atualizado com sucesso.");
+        } catch (SQLException e) {
+            System.out.println("Erro ao atualizar jogador: " + e.getMessage());
+        }
+    }
+
+
+    public static int consultarPontuacao(String usuario) {
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String sql = "SELECT pontuacao FROM jogadores WHERE usuario = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, usuario);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("pontuacao");
+                    } else {
+                        System.out.println("Jogador não encontrado.");
+                        return 0;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao consultar pontuação: " + e.getMessage());
+            return 0;
+        }
+    }
+}    
